@@ -236,6 +236,7 @@
       background: #fff;
       position: relative;
       cursor: pointer;
+      overflow: hidden;
     }
 
     .day-cell:nth-child(7n) { border-right: 0; }
@@ -262,6 +263,7 @@
       overflow: hidden;
       text-overflow: ellipsis;
       cursor: pointer;
+      max-width: 100%;
     }
 
     .event-Family { background: var(--family); }
@@ -448,9 +450,9 @@
       .form-grid { grid-template-columns: 1fr; }
       .calendar-grid { border-radius: 13px; }
       .weekday { font-size: 11px; padding: 8px 3px; }
-      .day-cell { min-height: 78px; padding: 5px; }
-      .date-number { font-size: 12px; }
-      .event-pill { font-size: 11px; padding: 4px 6px; }
+      .day-cell { min-height: 74px; padding: 5px; }
+      .date-number { font-size: 12px; margin-bottom: 3px; }
+      .event-pill { font-size: 10px; padding: 3px 5px; margin: 3px 0; }
       .hide-mobile { display: none; }
       button { padding: 9px 12px; }
       .calendar-toolbar { align-items: flex-start; }
@@ -569,7 +571,7 @@
       </aside>
     </main>
 
-    <p class="version">Family Calendar v1</p>
+    <p class="version">Family Calendar v1.1</p>
   </div>
 
   <div id="eventModal" class="modal-backdrop hidden" role="dialog" aria-modal="true">
@@ -751,6 +753,7 @@
     const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
     const monthFormatter = new Intl.DateTimeFormat("en-US", { month: "long", year: "numeric" });
     const dateFormatter = new Intl.DateTimeFormat("en-US", { weekday: "short", month: "short", day: "numeric" });
+    const timeFormatter = new Intl.DateTimeFormat("en-US", { hour: "numeric", minute: "2-digit", hour12: true });
 
     function showScreen(screenName) {
       els.authScreen.classList.toggle("hidden", screenName !== "auth");
@@ -792,10 +795,18 @@
       return toDateKey(new Date());
     }
 
+    function formatTime12(timeValue) {
+      if (!timeValue) return "";
+      const [hours, minutes] = String(timeValue).split(":");
+      const date = new Date();
+      date.setHours(Number(hours || 0), Number(minutes || 0), 0, 0);
+      return timeFormatter.format(date).replace(" ", "");
+    }
+
     function eventTimeText(event) {
       if (event.allDay) return "All day";
-      const start = event.startTime || "";
-      const end = event.endTime || "";
+      const start = formatTime12(event.startTime || "");
+      const end = formatTime12(event.endTime || "");
       if (start && end) return `${start}–${end}`;
       if (start) return start;
       return "No time set";
@@ -874,12 +885,13 @@
         dateRow.innerHTML = `<span>${cellDate.getDate()}</span>`;
         cell.appendChild(dateRow);
 
-        cellEvents.slice(0, 3).forEach(event => {
+        const maxVisibleEvents = window.matchMedia("(max-width: 620px)").matches ? 1 : 3;
+        cellEvents.slice(0, maxVisibleEvents).forEach(event => {
           const pill = document.createElement("div");
           const category = normalizeCategory(event.category);
           pill.className = `event-pill event-${category}`;
-          pill.textContent = `${event.allDay ? "" : (event.startTime ? event.startTime + " " : "")}${event.title || "Untitled"}`;
-          pill.title = event.title || "Untitled";
+          pill.textContent = event.title || "Untitled";
+          pill.title = `${event.title || "Untitled"}${event.allDay ? "" : ` · ${eventTimeText(event)}`}`;
           pill.addEventListener("click", (e) => {
             e.stopPropagation();
             openEventModal(event);
@@ -887,10 +899,10 @@
           cell.appendChild(pill);
         });
 
-        if (cellEvents.length > 3) {
+        if (cellEvents.length > maxVisibleEvents) {
           const more = document.createElement("div");
           more.className = "more-events";
-          more.textContent = `+${cellEvents.length - 3} more`;
+          more.textContent = `+${cellEvents.length - maxVisibleEvents} more`;
           cell.appendChild(more);
         }
 
@@ -1257,6 +1269,10 @@
     els.todayBtn.addEventListener("click", () => {
       state.viewDate = new Date();
       renderCalendar();
+    });
+
+    window.addEventListener("resize", () => {
+      if (!els.appScreen.classList.contains("hidden")) renderCalendar();
     });
 
     els.addEventBtn.addEventListener("click", () => openEventModal(null, todayKey()));
