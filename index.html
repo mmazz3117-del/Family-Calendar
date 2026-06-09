@@ -287,9 +287,70 @@
       gap: 16px;
     }
 
-    .upcoming-list, .member-list {
+    .upcoming-list, .member-list, .quick-list {
       display: grid;
       gap: 10px;
+    }
+
+    .section-title-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .quick-dashboard {
+      display: grid;
+      gap: 14px;
+    }
+
+    .quick-block {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 12px;
+      background: #fff;
+    }
+
+    .quick-block h3 {
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .quick-event {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 10px;
+      background: #fbfaf8;
+      cursor: pointer;
+    }
+
+    .quick-event:hover {
+      border-color: rgba(47, 111, 115, 0.35);
+      background: #fff;
+    }
+
+    .quick-event-title {
+      font-weight: 850;
+      margin-bottom: 3px;
+      line-height: 1.25;
+    }
+
+    .count-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 24px;
+      height: 24px;
+      border-radius: 999px;
+      background: var(--soft);
+      color: var(--brand-dark);
+      font-size: 12px;
+      font-weight: 850;
+      padding: 0 7px;
     }
 
     .event-item, .member-item {
@@ -596,6 +657,27 @@
 
       <aside class="side-stack">
         <section class="card">
+          <div class="section-title-row">
+            <div>
+              <p class="subtitle">At a glance</p>
+              <h2 style="margin-bottom: 0;">Today / This Week</h2>
+            </div>
+          </div>
+
+          <div class="quick-dashboard">
+            <div class="quick-block">
+              <h3>Today <span id="todayCount" class="count-badge">0</span></h3>
+              <div id="todayList" class="quick-list"></div>
+            </div>
+
+            <div class="quick-block">
+              <h3>This Week <span id="weekCount" class="count-badge">0</span></h3>
+              <div id="weekList" class="quick-list"></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="card">
           <h2>Upcoming</h2>
           <div id="upcomingList" class="upcoming-list"></div>
         </section>
@@ -608,7 +690,7 @@
       </aside>
     </main>
 
-    <p class="version">Family Calendar v1.2</p>
+    <p class="version">Family Calendar v1.3.1</p>
   </div>
 
 
@@ -772,6 +854,10 @@
       upcomingList: document.getElementById("upcomingList"),
       adminPanel: document.getElementById("adminPanel"),
       memberList: document.getElementById("memberList"),
+      todayList: document.getElementById("todayList"),
+      weekList: document.getElementById("weekList"),
+      todayCount: document.getElementById("todayCount"),
+      weekCount: document.getElementById("weekCount"),
       prevMonthBtn: document.getElementById("prevMonthBtn"),
       nextMonthBtn: document.getElementById("nextMonthBtn"),
       todayBtn: document.getElementById("todayBtn"),
@@ -862,6 +948,12 @@
 
     function dateFromKey(dateKey) {
       return new Date(`${dateKey}T12:00:00`);
+    }
+
+    function addDays(date, days) {
+      const copy = new Date(date);
+      copy.setDate(copy.getDate() + days);
+      return copy;
     }
 
     function formatTime12(timeValue) {
@@ -963,7 +1055,7 @@
           pill.title = `${event.title || "Untitled"}${event.allDay ? "" : ` · ${eventTimeText(event)}`}`;
           pill.addEventListener("click", (e) => {
             e.stopPropagation();
-            openEventModal(event);
+            openDayModal(key);
           });
           cell.appendChild(pill);
         });
@@ -978,6 +1070,57 @@
         cell.addEventListener("click", () => openDayModal(key));
         els.calendarGrid.appendChild(cell);
       }
+    }
+
+    function quickEventHtml(event, includeDate = false) {
+      const category = normalizeCategory(event.category);
+      const dateText = includeDate ? `${eventDateText(event)} · ` : "";
+      const who = Array.isArray(event.people) && event.people.length ? `<br>Who: ${escapeHtml(event.people.join(", "))}` : "";
+      const location = event.location ? `<br>Location: ${escapeHtml(event.location)}` : "";
+
+      return `
+        <div class="quick-event" data-event-id="${event.id}">
+          <div class="quick-event-title"><span class="category-dot dot-${category}"></span>${escapeHtml(event.title || "Untitled")}</div>
+          <div class="meta">${dateText}${eventTimeText(event)}${who}${location}</div>
+        </div>
+      `;
+    }
+
+    function attachQuickEventClicks(container) {
+      container.querySelectorAll(".quick-event").forEach(item => {
+        item.addEventListener("click", () => {
+          const event = state.events.find(e => e.id === item.dataset.eventId);
+          if (event) openEventModal(event);
+        });
+      });
+    }
+
+    function renderQuickDashboard() {
+      const today = todayKey();
+      const weekEnd = toDateKey(addDays(new Date(), 6));
+
+      const todayEvents = eventsForDate(today);
+      const weekEvents = sortEvents(state.events)
+        .filter(event => {
+          const start = event.startDate || "9999-99-99";
+          const end = event.endDate || start;
+          return start <= weekEnd && end >= today;
+        })
+        .slice(0, 12);
+
+      els.todayCount.textContent = String(todayEvents.length);
+      els.weekCount.textContent = String(weekEvents.length);
+
+      els.todayList.innerHTML = todayEvents.length
+        ? todayEvents.map(event => quickEventHtml(event, false)).join("")
+        : `<div class="empty-state">Nothing scheduled for today.</div>`;
+
+      els.weekList.innerHTML = weekEvents.length
+        ? weekEvents.map(event => quickEventHtml(event, true)).join("")
+        : `<div class="empty-state">Nothing scheduled this week.</div>`;
+
+      attachQuickEventClicks(els.todayList);
+      attachQuickEventClicks(els.weekList);
     }
 
     function renderUpcoming() {
@@ -1075,6 +1218,7 @@
 
     function renderAll() {
       renderCalendar();
+      renderQuickDashboard();
       renderUpcoming();
       renderMembers();
       if (!els.dayModal.classList.contains("hidden")) renderDayModalEvents();
