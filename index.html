@@ -412,6 +412,43 @@
       flex-wrap: wrap;
     }
 
+
+    .day-event-list {
+      display: grid;
+      gap: 10px;
+      margin: 14px 0;
+    }
+
+    .day-event-item {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 12px;
+      background: #fff;
+      cursor: pointer;
+      transition: transform 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease;
+    }
+
+    .day-event-item:hover {
+      transform: translateY(-1px);
+      border-color: rgba(47, 111, 115, 0.35);
+      box-shadow: 0 8px 20px rgba(39, 49, 63, 0.08);
+    }
+
+    .day-event-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: flex-start;
+      margin-bottom: 4px;
+    }
+
+    .day-event-title {
+      font-weight: 850;
+      line-height: 1.25;
+    }
+
+    .day-modal .subtitle { margin: 0; }
+
     .empty-state {
       color: var(--muted);
       border: 1px dashed var(--line);
@@ -571,7 +608,27 @@
       </aside>
     </main>
 
-    <p class="version">Family Calendar v1.1</p>
+    <p class="version">Family Calendar v1.2</p>
+  </div>
+
+
+  <div id="dayModal" class="modal-backdrop hidden" role="dialog" aria-modal="true">
+    <div class="modal day-modal">
+      <div class="modal-header">
+        <div>
+          <p class="subtitle">Day view</p>
+          <h2 id="dayModalTitle">Selected day</h2>
+        </div>
+        <button id="closeDayModalBtn" type="button" class="secondary icon" aria-label="Close">×</button>
+      </div>
+
+      <div id="dayEventList" class="day-event-list"></div>
+
+      <div class="form-actions">
+        <button id="addEventForDayBtn" type="button">+ Add Event</button>
+        <button id="closeDayDoneBtn" type="button" class="secondary">Close</button>
+      </div>
+    </div>
   </div>
 
   <div id="eventModal" class="modal-backdrop hidden" role="dialog" aria-modal="true">
@@ -719,6 +776,12 @@
       nextMonthBtn: document.getElementById("nextMonthBtn"),
       todayBtn: document.getElementById("todayBtn"),
       addEventBtn: document.getElementById("addEventBtn"),
+      dayModal: document.getElementById("dayModal"),
+      dayModalTitle: document.getElementById("dayModalTitle"),
+      dayEventList: document.getElementById("dayEventList"),
+      closeDayModalBtn: document.getElementById("closeDayModalBtn"),
+      closeDayDoneBtn: document.getElementById("closeDayDoneBtn"),
+      addEventForDayBtn: document.getElementById("addEventForDayBtn"),
       eventModal: document.getElementById("eventModal"),
       eventModalTitle: document.getElementById("eventModalTitle"),
       closeModalBtn: document.getElementById("closeModalBtn"),
@@ -746,6 +809,7 @@
       events: [],
       members: [],
       viewDate: new Date(),
+      selectedDateKey: null,
       unsubscribeEvents: null,
       unsubscribeMembers: null
     };
@@ -753,6 +817,7 @@
     const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
     const monthFormatter = new Intl.DateTimeFormat("en-US", { month: "long", year: "numeric" });
     const dateFormatter = new Intl.DateTimeFormat("en-US", { weekday: "short", month: "short", day: "numeric" });
+    const fullDayFormatter = new Intl.DateTimeFormat("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" });
     const timeFormatter = new Intl.DateTimeFormat("en-US", { hour: "numeric", minute: "2-digit", hour12: true });
 
     function showScreen(screenName) {
@@ -793,6 +858,10 @@
 
     function todayKey() {
       return toDateKey(new Date());
+    }
+
+    function dateFromKey(dateKey) {
+      return new Date(`${dateKey}T12:00:00`);
     }
 
     function formatTime12(timeValue) {
@@ -906,7 +975,7 @@
           cell.appendChild(more);
         }
 
-        cell.addEventListener("click", () => openEventModal(null, key));
+        cell.addEventListener("click", () => openDayModal(key));
         els.calendarGrid.appendChild(cell);
       }
     }
@@ -1008,6 +1077,55 @@
       renderCalendar();
       renderUpcoming();
       renderMembers();
+      if (!els.dayModal.classList.contains("hidden")) renderDayModalEvents();
+    }
+
+    function renderDayModalEvents() {
+      const dateKey = state.selectedDateKey;
+      if (!dateKey) return;
+      const dayEvents = eventsForDate(dateKey);
+
+      if (!dayEvents.length) {
+        els.dayEventList.innerHTML = `<div class="empty-state">No events for this day yet.</div>`;
+        return;
+      }
+
+      els.dayEventList.innerHTML = dayEvents.map(event => {
+        const category = normalizeCategory(event.category);
+        const who = Array.isArray(event.people) && event.people.length ? `<br>Who: ${escapeHtml(event.people.join(", "))}` : "";
+        const location = event.location ? `<br>Location: ${escapeHtml(event.location)}` : "";
+        const notes = event.notes ? `<br>Notes: ${escapeHtml(event.notes)}` : "";
+        return `
+          <div class="day-event-item" data-event-id="${event.id}">
+            <div class="day-event-top">
+              <div class="day-event-title"><span class="category-dot dot-${category}"></span>${escapeHtml(event.title || "Untitled")}</div>
+              <span class="badge">${escapeHtml(category)}</span>
+            </div>
+            <div class="meta">${eventTimeText(event)}${who}${location}${notes}</div>
+          </div>
+        `;
+      }).join("");
+
+      els.dayEventList.querySelectorAll(".day-event-item").forEach(item => {
+        item.addEventListener("click", () => {
+          const event = state.events.find(e => e.id === item.dataset.eventId);
+          if (event) {
+            closeDayModal();
+            openEventModal(event);
+          }
+        });
+      });
+    }
+
+    function openDayModal(dateKey) {
+      state.selectedDateKey = dateKey;
+      els.dayModalTitle.textContent = fullDayFormatter.format(dateFromKey(dateKey));
+      renderDayModalEvents();
+      els.dayModal.classList.remove("hidden");
+    }
+
+    function closeDayModal() {
+      els.dayModal.classList.add("hidden");
     }
 
     function openEventModal(event = null, dateKey = null) {
@@ -1276,6 +1394,16 @@
     });
 
     els.addEventBtn.addEventListener("click", () => openEventModal(null, todayKey()));
+    els.closeDayModalBtn.addEventListener("click", closeDayModal);
+    els.closeDayDoneBtn.addEventListener("click", closeDayModal);
+    els.addEventForDayBtn.addEventListener("click", () => {
+      const selectedDate = state.selectedDateKey || todayKey();
+      closeDayModal();
+      openEventModal(null, selectedDate);
+    });
+    els.dayModal.addEventListener("click", (e) => {
+      if (e.target === els.dayModal) closeDayModal();
+    });
     els.closeModalBtn.addEventListener("click", closeEventModal);
     els.cancelEventBtn.addEventListener("click", closeEventModal);
     els.eventForm.addEventListener("submit", saveEvent);
