@@ -1,0 +1,1312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Our Family Calendar</title>
+  <style>
+    :root {
+      --bg: #f6f3ee;
+      --card: #ffffff;
+      --ink: #27313f;
+      --muted: #6d7785;
+      --line: #e4ded6;
+      --brand: #2f6f73;
+      --brand-dark: #22575a;
+      --soft: #eaf4f3;
+      --danger: #b42318;
+      --warning: #b86e00;
+      --shadow: 0 14px 40px rgba(39, 49, 63, 0.10);
+      --radius: 18px;
+      --family: #2f6f73;
+      --school: #5b5bd6;
+      --work: #6b4c9a;
+      --appointment: #b45735;
+      --sports: #25743f;
+      --travel: #0b6d9a;
+      --birthday: #b33d75;
+      --other: #5f6774;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top left, #fff8e8 0, #f6f3ee 42%, #edf4f3 100%);
+      color: var(--ink);
+      min-height: 100vh;
+    }
+
+    button, input, select, textarea {
+      font: inherit;
+    }
+
+    button {
+      border: 0;
+      border-radius: 999px;
+      padding: 10px 15px;
+      background: var(--brand);
+      color: #fff;
+      cursor: pointer;
+      font-weight: 700;
+      transition: transform 0.08s ease, opacity 0.2s ease, background 0.2s ease;
+    }
+
+    button:hover { background: var(--brand-dark); }
+    button:active { transform: translateY(1px); }
+    button.secondary { background: #eef1f3; color: var(--ink); }
+    button.secondary:hover { background: #e0e6e9; }
+    button.danger { background: var(--danger); }
+    button.small { padding: 7px 11px; font-size: 13px; }
+    button.icon { min-width: 40px; padding: 10px 12px; }
+    button:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    .app-shell {
+      width: min(1180px, calc(100% - 28px));
+      margin: 0 auto;
+      padding: 18px 0 36px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .brand-wrap {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo {
+      width: 48px;
+      height: 48px;
+      border-radius: 16px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, #2f6f73, #f2c066);
+      color: #fff;
+      font-size: 26px;
+      box-shadow: var(--shadow);
+    }
+
+    h1, h2, h3, p { margin-top: 0; }
+    h1 { font-size: clamp(26px, 5vw, 44px); margin-bottom: 2px; letter-spacing: -0.04em; }
+    h2 { font-size: 22px; margin-bottom: 12px; }
+    h3 { font-size: 17px; margin-bottom: 8px; }
+    .subtitle { color: var(--muted); margin: 0; }
+
+    .card {
+      background: rgba(255, 255, 255, 0.92);
+      border: 1px solid rgba(228, 222, 214, 0.9);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 18px;
+      backdrop-filter: blur(8px);
+    }
+
+    .auth-card {
+      max-width: 500px;
+      margin: 8vh auto;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    label {
+      display: block;
+      font-size: 13px;
+      color: var(--muted);
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      background: #fff;
+      color: var(--ink);
+      padding: 11px 12px;
+      outline: none;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--brand);
+      box-shadow: 0 0 0 3px rgba(47, 111, 115, 0.12);
+    }
+
+    textarea { min-height: 90px; resize: vertical; }
+    .full { grid-column: 1 / -1; }
+
+    .auth-tabs {
+      display: flex;
+      gap: 8px;
+      background: #eef1f3;
+      border-radius: 999px;
+      padding: 5px;
+      margin: 18px 0;
+    }
+
+    .auth-tabs button {
+      flex: 1;
+      background: transparent;
+      color: var(--ink);
+    }
+
+    .auth-tabs button.active {
+      background: #fff;
+      box-shadow: 0 4px 12px rgba(39, 49, 63, 0.10);
+    }
+
+    .error, .notice {
+      border-radius: 14px;
+      padding: 12px 14px;
+      margin: 12px 0;
+      font-size: 14px;
+    }
+
+    .error { background: #fff0ed; color: var(--danger); border: 1px solid #ffd1ca; }
+    .notice { background: var(--soft); color: var(--brand-dark); border: 1px solid #d5e9e7; }
+    .hidden { display: none !important; }
+
+    .dashboard {
+      display: grid;
+      grid-template-columns: 1fr 360px;
+      gap: 16px;
+      align-items: start;
+    }
+
+    .calendar-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+
+    .month-title {
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 850;
+      letter-spacing: -0.04em;
+      margin: 0;
+    }
+
+    .toolbar-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      overflow: hidden;
+      background: #fff;
+    }
+
+    .weekday {
+      padding: 10px 8px;
+      background: #f4f0ea;
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--muted);
+      text-align: center;
+      border-right: 1px solid var(--line);
+    }
+
+    .weekday:last-child { border-right: 0; }
+
+    .day-cell {
+      min-height: 118px;
+      padding: 9px;
+      border-top: 1px solid var(--line);
+      border-right: 1px solid var(--line);
+      background: #fff;
+      position: relative;
+      cursor: pointer;
+    }
+
+    .day-cell:nth-child(7n) { border-right: 0; }
+    .day-cell.muted { background: #fbfaf8; color: #a0a7b0; }
+    .day-cell.today { box-shadow: inset 0 0 0 2px rgba(47, 111, 115, 0.45); }
+
+    .date-number {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-weight: 800;
+      font-size: 14px;
+      margin-bottom: 6px;
+    }
+
+    .event-pill {
+      border-radius: 999px;
+      padding: 5px 8px;
+      color: #fff;
+      font-size: 12px;
+      line-height: 1.2;
+      margin: 4px 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      cursor: pointer;
+    }
+
+    .event-Family { background: var(--family); }
+    .event-School { background: var(--school); }
+    .event-Work { background: var(--work); }
+    .event-Appointment { background: var(--appointment); }
+    .event-Sports { background: var(--sports); }
+    .event-Travel { background: var(--travel); }
+    .event-Birthday { background: var(--birthday); }
+    .event-Other { background: var(--other); }
+
+    .more-events {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      margin-top: 4px;
+    }
+
+    .side-stack {
+      display: grid;
+      gap: 16px;
+    }
+
+    .upcoming-list, .member-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .event-item, .member-item {
+      border: 1px solid var(--line);
+      border-radius: 15px;
+      padding: 12px;
+      background: #fff;
+    }
+
+    .event-item-title {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      font-weight: 850;
+      margin-bottom: 4px;
+    }
+
+    .meta {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .category-dot {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      margin-right: 6px;
+      vertical-align: middle;
+      background: var(--other);
+    }
+
+    .dot-Family { background: var(--family); }
+    .dot-School { background: var(--school); }
+    .dot-Work { background: var(--work); }
+    .dot-Appointment { background: var(--appointment); }
+    .dot-Sports { background: var(--sports); }
+    .dot-Travel { background: var(--travel); }
+    .dot-Birthday { background: var(--birthday); }
+    .dot-Other { background: var(--other); }
+
+    .member-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .badge {
+      display: inline-flex;
+      border-radius: 999px;
+      padding: 4px 8px;
+      background: #eef1f3;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .badge.good { background: #e7f4eb; color: #1e6c37; }
+    .badge.warn { background: #fff3da; color: var(--warning); }
+
+    .member-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(22, 27, 33, 0.45);
+      display: grid;
+      place-items: start center;
+      padding: 24px 12px;
+      overflow-y: auto;
+      z-index: 10;
+    }
+
+    .modal {
+      width: min(620px, 100%);
+      background: #fff;
+      border-radius: 22px;
+      box-shadow: 0 24px 80px rgba(0, 0, 0, 0.24);
+      padding: 20px;
+      margin-top: 3vh;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .modal-header h2 { margin: 0; }
+
+    .checkbox-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 0;
+    }
+
+    .checkbox-row input { width: auto; }
+
+    .form-actions {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 16px;
+      flex-wrap: wrap;
+    }
+
+    .right-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .empty-state {
+      color: var(--muted);
+      border: 1px dashed var(--line);
+      border-radius: 15px;
+      padding: 16px;
+      text-align: center;
+      background: #fff;
+    }
+
+    .pending-screen {
+      max-width: 560px;
+      margin: 10vh auto;
+      text-align: center;
+    }
+
+    .version {
+      text-align: center;
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 22px;
+    }
+
+    @media (max-width: 900px) {
+      .dashboard { grid-template-columns: 1fr; }
+      .side-stack { grid-template-columns: 1fr; }
+      .day-cell { min-height: 96px; padding: 7px; }
+    }
+
+    @media (max-width: 620px) {
+      .app-shell { width: min(100% - 18px, 1180px); padding-top: 10px; }
+      .topbar { align-items: flex-start; }
+      .brand-wrap { gap: 9px; }
+      .logo { width: 42px; height: 42px; border-radius: 14px; font-size: 23px; }
+      .topbar .subtitle { font-size: 13px; }
+      .card { padding: 14px; border-radius: 16px; }
+      .form-grid { grid-template-columns: 1fr; }
+      .calendar-grid { border-radius: 13px; }
+      .weekday { font-size: 11px; padding: 8px 3px; }
+      .day-cell { min-height: 78px; padding: 5px; }
+      .date-number { font-size: 12px; }
+      .event-pill { font-size: 11px; padding: 4px 6px; }
+      .hide-mobile { display: none; }
+      button { padding: 9px 12px; }
+      .calendar-toolbar { align-items: flex-start; }
+      .toolbar-actions { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <div id="authScreen" class="app-shell">
+    <div class="auth-card card">
+      <div class="brand-wrap">
+        <div class="logo">📅</div>
+        <div>
+          <h1>Our Family Calendar</h1>
+          <p class="subtitle">A simple shared calendar for the family.</p>
+        </div>
+      </div>
+
+      <div class="auth-tabs">
+        <button id="loginTab" class="active" type="button">Log in</button>
+        <button id="signupTab" type="button">Request access</button>
+      </div>
+
+      <div id="authMessage" class="hidden"></div>
+
+      <form id="loginForm">
+        <div class="form-grid">
+          <div class="full">
+            <label for="loginEmail">Email</label>
+            <input id="loginEmail" type="email" autocomplete="email" required />
+          </div>
+          <div class="full">
+            <label for="loginPassword">Password</label>
+            <input id="loginPassword" type="password" autocomplete="current-password" required />
+          </div>
+        </div>
+        <div class="form-actions">
+          <button id="loginBtn" type="submit">Log in</button>
+        </div>
+      </form>
+
+      <form id="signupForm" class="hidden">
+        <div class="form-grid">
+          <div class="full">
+            <label for="signupName">Name</label>
+            <input id="signupName" type="text" autocomplete="name" placeholder="Example: Jessica" required />
+          </div>
+          <div class="full">
+            <label for="signupEmail">Email</label>
+            <input id="signupEmail" type="email" autocomplete="email" required />
+          </div>
+          <div class="full">
+            <label for="signupPassword">Password</label>
+            <input id="signupPassword" type="password" autocomplete="new-password" minlength="6" required />
+          </div>
+        </div>
+        <div class="notice">New accounts are created as pending until an admin approves them.</div>
+        <div class="form-actions">
+          <button id="signupBtn" type="submit">Create pending account</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="pendingScreen" class="app-shell hidden">
+    <div class="pending-screen card">
+      <div class="logo" style="margin: 0 auto 12px;">⏳</div>
+      <h1>Waiting for approval</h1>
+      <p class="subtitle">Your account was created, but it needs to be approved before you can view the family calendar.</p>
+      <div style="margin-top: 18px;">
+        <button id="pendingLogoutBtn" type="button" class="secondary">Log out</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="appScreen" class="app-shell hidden">
+    <header class="topbar">
+      <div class="brand-wrap">
+        <div class="logo">📅</div>
+        <div>
+          <h1>Our Family Calendar</h1>
+          <p id="signedInText" class="subtitle">Signed in</p>
+        </div>
+      </div>
+      <button id="logoutBtn" type="button" class="secondary">Log out</button>
+    </header>
+
+    <main class="dashboard">
+      <section class="card">
+        <div class="calendar-toolbar">
+          <div>
+            <p class="subtitle">Shared month view</p>
+            <h2 id="monthTitle" class="month-title">Month</h2>
+          </div>
+          <div class="toolbar-actions">
+            <button id="prevMonthBtn" type="button" class="icon secondary" title="Previous month">‹</button>
+            <button id="todayBtn" type="button" class="secondary">Today</button>
+            <button id="nextMonthBtn" type="button" class="icon secondary" title="Next month">›</button>
+            <button id="addEventBtn" type="button">+ Add Event</button>
+          </div>
+        </div>
+        <div id="calendarGrid" class="calendar-grid"></div>
+      </section>
+
+      <aside class="side-stack">
+        <section class="card">
+          <h2>Upcoming</h2>
+          <div id="upcomingList" class="upcoming-list"></div>
+        </section>
+
+        <section id="adminPanel" class="card hidden">
+          <h2>Family Members</h2>
+          <p class="subtitle">Admin area: approve family users and manage roles.</p>
+          <div id="memberList" class="member-list" style="margin-top: 12px;"></div>
+        </section>
+      </aside>
+    </main>
+
+    <p class="version">Family Calendar v1</p>
+  </div>
+
+  <div id="eventModal" class="modal-backdrop hidden" role="dialog" aria-modal="true">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 id="eventModalTitle">Add Event</h2>
+        <button id="closeModalBtn" type="button" class="secondary icon" aria-label="Close">×</button>
+      </div>
+
+      <div id="eventMessage" class="hidden"></div>
+
+      <form id="eventForm">
+        <input id="eventId" type="hidden" />
+        <div class="form-grid">
+          <div class="full">
+            <label for="eventTitle">Title</label>
+            <input id="eventTitle" type="text" placeholder="Example: Dentist appointment" required />
+          </div>
+
+          <div>
+            <label for="eventStartDate">Start date</label>
+            <input id="eventStartDate" type="date" required />
+          </div>
+          <div>
+            <label for="eventEndDate">End date</label>
+            <input id="eventEndDate" type="date" required />
+          </div>
+
+          <div>
+            <label for="eventStartTime">Start time</label>
+            <input id="eventStartTime" type="time" />
+          </div>
+          <div>
+            <label for="eventEndTime">End time</label>
+            <input id="eventEndTime" type="time" />
+          </div>
+
+          <div class="full checkbox-row">
+            <input id="eventAllDay" type="checkbox" />
+            <label for="eventAllDay" style="margin: 0;">All-day event</label>
+          </div>
+
+          <div>
+            <label for="eventCategory">Category</label>
+            <select id="eventCategory">
+              <option>Family</option>
+              <option>School</option>
+              <option>Work</option>
+              <option>Appointment</option>
+              <option>Sports</option>
+              <option>Travel</option>
+              <option>Birthday</option>
+              <option>Other</option>
+            </select>
+          </div>
+
+          <div>
+            <label for="eventPeople">Who</label>
+            <input id="eventPeople" type="text" placeholder="Matt, Jessica, Lilith" />
+          </div>
+
+          <div class="full">
+            <label for="eventLocation">Location</label>
+            <input id="eventLocation" type="text" placeholder="Optional" />
+          </div>
+
+          <div class="full">
+            <label for="eventNotes">Notes</label>
+            <textarea id="eventNotes" placeholder="Optional details"></textarea>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button id="deleteEventBtn" type="button" class="danger hidden">Delete</button>
+          <div class="right-actions">
+            <button type="button" class="secondary" id="cancelEventBtn">Cancel</button>
+            <button id="saveEventBtn" type="submit">Save event</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
+    import {
+      getAuth,
+      onAuthStateChanged,
+      signInWithEmailAndPassword,
+      createUserWithEmailAndPassword,
+      signOut,
+      updateProfile
+    } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js";
+    import {
+      getFirestore,
+      collection,
+      doc,
+      getDoc,
+      setDoc,
+      addDoc,
+      updateDoc,
+      deleteDoc,
+      onSnapshot,
+      serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDwH6K7P86AYXOmgGOhFjd12pMJsvChdE",
+      authDomain: "our-family-calendar-1206b.firebaseapp.com",
+      projectId: "our-family-calendar-1206b",
+      storageBucket: "our-family-calendar-1206b.firebasestorage.app",
+      messagingSenderId: "303920265252",
+      appId: "1:303920265252:web:2dfaea1e8dbba4d6cdc0b1"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    const els = {
+      authScreen: document.getElementById("authScreen"),
+      pendingScreen: document.getElementById("pendingScreen"),
+      appScreen: document.getElementById("appScreen"),
+      loginTab: document.getElementById("loginTab"),
+      signupTab: document.getElementById("signupTab"),
+      loginForm: document.getElementById("loginForm"),
+      signupForm: document.getElementById("signupForm"),
+      authMessage: document.getElementById("authMessage"),
+      loginEmail: document.getElementById("loginEmail"),
+      loginPassword: document.getElementById("loginPassword"),
+      signupName: document.getElementById("signupName"),
+      signupEmail: document.getElementById("signupEmail"),
+      signupPassword: document.getElementById("signupPassword"),
+      loginBtn: document.getElementById("loginBtn"),
+      signupBtn: document.getElementById("signupBtn"),
+      logoutBtn: document.getElementById("logoutBtn"),
+      pendingLogoutBtn: document.getElementById("pendingLogoutBtn"),
+      signedInText: document.getElementById("signedInText"),
+      monthTitle: document.getElementById("monthTitle"),
+      calendarGrid: document.getElementById("calendarGrid"),
+      upcomingList: document.getElementById("upcomingList"),
+      adminPanel: document.getElementById("adminPanel"),
+      memberList: document.getElementById("memberList"),
+      prevMonthBtn: document.getElementById("prevMonthBtn"),
+      nextMonthBtn: document.getElementById("nextMonthBtn"),
+      todayBtn: document.getElementById("todayBtn"),
+      addEventBtn: document.getElementById("addEventBtn"),
+      eventModal: document.getElementById("eventModal"),
+      eventModalTitle: document.getElementById("eventModalTitle"),
+      closeModalBtn: document.getElementById("closeModalBtn"),
+      cancelEventBtn: document.getElementById("cancelEventBtn"),
+      eventForm: document.getElementById("eventForm"),
+      eventMessage: document.getElementById("eventMessage"),
+      eventId: document.getElementById("eventId"),
+      eventTitle: document.getElementById("eventTitle"),
+      eventStartDate: document.getElementById("eventStartDate"),
+      eventEndDate: document.getElementById("eventEndDate"),
+      eventStartTime: document.getElementById("eventStartTime"),
+      eventEndTime: document.getElementById("eventEndTime"),
+      eventAllDay: document.getElementById("eventAllDay"),
+      eventCategory: document.getElementById("eventCategory"),
+      eventPeople: document.getElementById("eventPeople"),
+      eventLocation: document.getElementById("eventLocation"),
+      eventNotes: document.getElementById("eventNotes"),
+      saveEventBtn: document.getElementById("saveEventBtn"),
+      deleteEventBtn: document.getElementById("deleteEventBtn")
+    };
+
+    const state = {
+      currentUser: null,
+      currentProfile: null,
+      events: [],
+      members: [],
+      viewDate: new Date(),
+      unsubscribeEvents: null,
+      unsubscribeMembers: null
+    };
+
+    const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    const monthFormatter = new Intl.DateTimeFormat("en-US", { month: "long", year: "numeric" });
+    const dateFormatter = new Intl.DateTimeFormat("en-US", { weekday: "short", month: "short", day: "numeric" });
+
+    function showScreen(screenName) {
+      els.authScreen.classList.toggle("hidden", screenName !== "auth");
+      els.pendingScreen.classList.toggle("hidden", screenName !== "pending");
+      els.appScreen.classList.toggle("hidden", screenName !== "app");
+    }
+
+    function showMessage(el, message, type = "error") {
+      el.className = type;
+      el.textContent = message;
+      el.classList.remove("hidden");
+    }
+
+    function clearMessage(el) {
+      el.textContent = "";
+      el.className = "hidden";
+    }
+
+    function setBusy(button, isBusy, textWhenBusy = "Working...") {
+      if (!button) return;
+      if (isBusy) {
+        button.dataset.originalText = button.textContent;
+        button.textContent = textWhenBusy;
+        button.disabled = true;
+      } else {
+        button.textContent = button.dataset.originalText || button.textContent;
+        button.disabled = false;
+      }
+    }
+
+    function toDateKey(date) {
+      const y = date.getFullYear();
+      const m = String(date.getMonth() + 1).padStart(2, "0");
+      const d = String(date.getDate()).padStart(2, "0");
+      return `${y}-${m}-${d}`;
+    }
+
+    function todayKey() {
+      return toDateKey(new Date());
+    }
+
+    function eventTimeText(event) {
+      if (event.allDay) return "All day";
+      const start = event.startTime || "";
+      const end = event.endTime || "";
+      if (start && end) return `${start}–${end}`;
+      if (start) return start;
+      return "No time set";
+    }
+
+    function eventDateText(event) {
+      const startDate = event.startDate || "";
+      const endDate = event.endDate || startDate;
+      if (!startDate) return "No date";
+      const safeStart = new Date(`${startDate}T12:00:00`);
+      const startText = dateFormatter.format(safeStart);
+      if (endDate && endDate !== startDate) {
+        const safeEnd = new Date(`${endDate}T12:00:00`);
+        return `${startText} – ${dateFormatter.format(safeEnd)}`;
+      }
+      return startText;
+    }
+
+    function normalizeCategory(category) {
+      return ["Family", "School", "Work", "Appointment", "Sports", "Travel", "Birthday", "Other"].includes(category)
+        ? category
+        : "Other";
+    }
+
+    function canEditEvent(event) {
+      if (!state.currentUser || !state.currentProfile) return false;
+      return state.currentProfile.role === "admin" || event.createdBy === state.currentUser.uid;
+    }
+
+    function sortEvents(events) {
+      return [...events].sort((a, b) => {
+        const aKey = `${a.startDate || "9999-99-99"} ${a.startTime || "00:00"} ${a.title || ""}`;
+        const bKey = `${b.startDate || "9999-99-99"} ${b.startTime || "00:00"} ${b.title || ""}`;
+        return aKey.localeCompare(bKey);
+      });
+    }
+
+    function eventsForDate(dateKey) {
+      return sortEvents(state.events.filter(event => {
+        const start = event.startDate;
+        const end = event.endDate || start;
+        return start <= dateKey && end >= dateKey;
+      }));
+    }
+
+    function renderCalendar() {
+      els.calendarGrid.innerHTML = "";
+      weekdays.forEach(day => {
+        const div = document.createElement("div");
+        div.className = "weekday";
+        div.textContent = day;
+        els.calendarGrid.appendChild(div);
+      });
+
+      const year = state.viewDate.getFullYear();
+      const month = state.viewDate.getMonth();
+      els.monthTitle.textContent = monthFormatter.format(new Date(year, month, 1));
+
+      const firstOfMonth = new Date(year, month, 1);
+      const startDate = new Date(year, month, 1 - firstOfMonth.getDay());
+      const today = todayKey();
+
+      for (let i = 0; i < 42; i++) {
+        const cellDate = new Date(startDate);
+        cellDate.setDate(startDate.getDate() + i);
+        const key = toDateKey(cellDate);
+        const inMonth = cellDate.getMonth() === month;
+        const cellEvents = eventsForDate(key);
+
+        const cell = document.createElement("div");
+        cell.className = `day-cell ${inMonth ? "" : "muted"} ${key === today ? "today" : ""}`.trim();
+        cell.dataset.date = key;
+
+        const dateRow = document.createElement("div");
+        dateRow.className = "date-number";
+        dateRow.innerHTML = `<span>${cellDate.getDate()}</span>`;
+        cell.appendChild(dateRow);
+
+        cellEvents.slice(0, 3).forEach(event => {
+          const pill = document.createElement("div");
+          const category = normalizeCategory(event.category);
+          pill.className = `event-pill event-${category}`;
+          pill.textContent = `${event.allDay ? "" : (event.startTime ? event.startTime + " " : "")}${event.title || "Untitled"}`;
+          pill.title = event.title || "Untitled";
+          pill.addEventListener("click", (e) => {
+            e.stopPropagation();
+            openEventModal(event);
+          });
+          cell.appendChild(pill);
+        });
+
+        if (cellEvents.length > 3) {
+          const more = document.createElement("div");
+          more.className = "more-events";
+          more.textContent = `+${cellEvents.length - 3} more`;
+          cell.appendChild(more);
+        }
+
+        cell.addEventListener("click", () => openEventModal(null, key));
+        els.calendarGrid.appendChild(cell);
+      }
+    }
+
+    function renderUpcoming() {
+      const today = todayKey();
+      const upcoming = sortEvents(state.events)
+        .filter(event => (event.endDate || event.startDate) >= today)
+        .slice(0, 10);
+
+      if (!upcoming.length) {
+        els.upcomingList.innerHTML = `<div class="empty-state">No upcoming events yet.</div>`;
+        return;
+      }
+
+      els.upcomingList.innerHTML = upcoming.map(event => {
+        const category = normalizeCategory(event.category);
+        const who = Array.isArray(event.people) && event.people.length ? `<br>Who: ${escapeHtml(event.people.join(", "))}` : "";
+        const location = event.location ? `<br>Location: ${escapeHtml(event.location)}` : "";
+        return `
+          <div class="event-item" data-event-id="${event.id}">
+            <div class="event-item-title">
+              <span><span class="category-dot dot-${category}"></span>${escapeHtml(event.title || "Untitled")}</span>
+            </div>
+            <div class="meta">${eventDateText(event)} · ${eventTimeText(event)}${who}${location}</div>
+          </div>
+        `;
+      }).join("");
+
+      els.upcomingList.querySelectorAll(".event-item").forEach(item => {
+        item.addEventListener("click", () => {
+          const event = state.events.find(e => e.id === item.dataset.eventId);
+          if (event) openEventModal(event);
+        });
+      });
+    }
+
+    function renderMembers() {
+      const isAdmin = state.currentProfile?.role === "admin";
+      els.adminPanel.classList.toggle("hidden", !isAdmin);
+      if (!isAdmin) return;
+
+      const members = [...state.members].sort((a, b) => (a.name || a.email || "").localeCompare(b.name || b.email || ""));
+      if (!members.length) {
+        els.memberList.innerHTML = `<div class="empty-state">No family members yet.</div>`;
+        return;
+      }
+
+      els.memberList.innerHTML = members.map(member => {
+        const approvedBadge = member.approved
+          ? `<span class="badge good">Approved</span>`
+          : `<span class="badge warn">Pending</span>`;
+        const roleBadge = `<span class="badge">${escapeHtml(member.role || "family")}</span>`;
+        const approveLabel = member.approved ? "Unapprove" : "Approve";
+        const newRole = member.role === "admin" ? "family" : "admin";
+        const roleLabel = member.role === "admin" ? "Make family" : "Make admin";
+
+        return `
+          <div class="member-item">
+            <div class="member-top">
+              <div>
+                <strong>${escapeHtml(member.name || "Unnamed")}</strong>
+                <div class="meta">${escapeHtml(member.email || "")}</div>
+              </div>
+              <div>${approvedBadge} ${roleBadge}</div>
+            </div>
+            <div class="member-actions">
+              <button type="button" class="small secondary member-approve" data-id="${member.id}">${approveLabel}</button>
+              <button type="button" class="small secondary member-role" data-id="${member.id}" data-role="${newRole}">${roleLabel}</button>
+            </div>
+          </div>
+        `;
+      }).join("");
+
+      els.memberList.querySelectorAll(".member-approve").forEach(btn => {
+        btn.addEventListener("click", async () => {
+          const member = state.members.find(m => m.id === btn.dataset.id);
+          if (!member) return;
+          btn.disabled = true;
+          await updateDoc(doc(db, "familyUsers", member.id), {
+            approved: !member.approved,
+            updatedAt: serverTimestamp()
+          });
+        });
+      });
+
+      els.memberList.querySelectorAll(".member-role").forEach(btn => {
+        btn.addEventListener("click", async () => {
+          btn.disabled = true;
+          await updateDoc(doc(db, "familyUsers", btn.dataset.id), {
+            role: btn.dataset.role,
+            updatedAt: serverTimestamp()
+          });
+        });
+      });
+    }
+
+    function renderAll() {
+      renderCalendar();
+      renderUpcoming();
+      renderMembers();
+    }
+
+    function openEventModal(event = null, dateKey = null) {
+      clearMessage(els.eventMessage);
+      els.eventForm.reset();
+
+      const isEditing = Boolean(event);
+      els.eventModalTitle.textContent = isEditing ? "Event Details" : "Add Event";
+      els.eventId.value = event?.id || "";
+      els.eventTitle.value = event?.title || "";
+      els.eventStartDate.value = event?.startDate || dateKey || todayKey();
+      els.eventEndDate.value = event?.endDate || event?.startDate || dateKey || todayKey();
+      els.eventStartTime.value = event?.startTime || "";
+      els.eventEndTime.value = event?.endTime || "";
+      els.eventAllDay.checked = Boolean(event?.allDay);
+      els.eventCategory.value = normalizeCategory(event?.category || "Family");
+      els.eventPeople.value = Array.isArray(event?.people) ? event.people.join(", ") : "";
+      els.eventLocation.value = event?.location || "";
+      els.eventNotes.value = event?.notes || "";
+
+      const editable = !isEditing || canEditEvent(event);
+      [els.eventTitle, els.eventStartDate, els.eventEndDate, els.eventStartTime, els.eventEndTime, els.eventAllDay, els.eventCategory, els.eventPeople, els.eventLocation, els.eventNotes, els.saveEventBtn]
+        .forEach(input => input.disabled = !editable);
+
+      els.deleteEventBtn.classList.toggle("hidden", !isEditing || !editable);
+      els.saveEventBtn.textContent = isEditing ? "Save changes" : "Save event";
+      els.eventModal.classList.remove("hidden");
+    }
+
+    function closeEventModal() {
+      els.eventModal.classList.add("hidden");
+      els.eventForm.reset();
+    }
+
+    function peopleArrayFromInput(value) {
+      return value
+        .split(",")
+        .map(item => item.trim())
+        .filter(Boolean);
+    }
+
+    async function saveEvent(e) {
+      e.preventDefault();
+      clearMessage(els.eventMessage);
+
+      if (!state.currentUser || !state.currentProfile?.approved) {
+        showMessage(els.eventMessage, "You need to be approved before saving events.");
+        return;
+      }
+
+      const id = els.eventId.value;
+      const startDate = els.eventStartDate.value;
+      const endDate = els.eventEndDate.value || startDate;
+      if (endDate < startDate) {
+        showMessage(els.eventMessage, "End date cannot be before start date.");
+        return;
+      }
+
+      const data = {
+        title: els.eventTitle.value.trim(),
+        startDate,
+        endDate,
+        startTime: els.eventAllDay.checked ? "" : els.eventStartTime.value,
+        endTime: els.eventAllDay.checked ? "" : els.eventEndTime.value,
+        allDay: els.eventAllDay.checked,
+        category: normalizeCategory(els.eventCategory.value),
+        people: peopleArrayFromInput(els.eventPeople.value),
+        location: els.eventLocation.value.trim(),
+        notes: els.eventNotes.value.trim(),
+        updatedAt: serverTimestamp()
+      };
+
+      if (!data.title) {
+        showMessage(els.eventMessage, "Please add a title.");
+        return;
+      }
+
+      setBusy(els.saveEventBtn, true, "Saving...");
+      try {
+        if (id) {
+          await updateDoc(doc(db, "familyEvents", id), data);
+        } else {
+          await addDoc(collection(db, "familyEvents"), {
+            ...data,
+            createdBy: state.currentUser.uid,
+            createdByEmail: state.currentUser.email || "",
+            createdAt: serverTimestamp()
+          });
+        }
+        closeEventModal();
+      } catch (err) {
+        console.error(err);
+        showMessage(els.eventMessage, friendlyError(err));
+      } finally {
+        setBusy(els.saveEventBtn, false);
+      }
+    }
+
+    async function deleteCurrentEvent() {
+      const id = els.eventId.value;
+      if (!id) return;
+      const event = state.events.find(e => e.id === id);
+      if (!event || !canEditEvent(event)) return;
+      if (!confirm("Delete this event?")) return;
+
+      els.deleteEventBtn.disabled = true;
+      try {
+        await deleteDoc(doc(db, "familyEvents", id));
+        closeEventModal();
+      } catch (err) {
+        console.error(err);
+        showMessage(els.eventMessage, friendlyError(err));
+      } finally {
+        els.deleteEventBtn.disabled = false;
+      }
+    }
+
+    function startCalendarListeners() {
+      stopCalendarListeners();
+
+      state.unsubscribeEvents = onSnapshot(collection(db, "familyEvents"), snapshot => {
+        state.events = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+        renderAll();
+      }, err => {
+        console.error(err);
+        alert(friendlyError(err));
+      });
+
+      if (state.currentProfile?.role === "admin") {
+        state.unsubscribeMembers = onSnapshot(collection(db, "familyUsers"), snapshot => {
+          state.members = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+          renderMembers();
+        }, err => {
+          console.error(err);
+        });
+      }
+    }
+
+    function stopCalendarListeners() {
+      if (state.unsubscribeEvents) state.unsubscribeEvents();
+      if (state.unsubscribeMembers) state.unsubscribeMembers();
+      state.unsubscribeEvents = null;
+      state.unsubscribeMembers = null;
+      state.events = [];
+      state.members = [];
+    }
+
+    async function loadOrCreateProfile(user) {
+      const ref = doc(db, "familyUsers", user.uid);
+      const snap = await getDoc(ref);
+
+      if (snap.exists()) {
+        return { id: snap.id, ...snap.data() };
+      }
+
+      const pendingProfile = {
+        name: user.displayName || user.email?.split("@")[0] || "Family Member",
+        email: user.email || "",
+        role: "family",
+        approved: false,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      };
+
+      await setDoc(ref, pendingProfile);
+      return { id: user.uid, ...pendingProfile };
+    }
+
+    async function handleLogin(e) {
+      e.preventDefault();
+      clearMessage(els.authMessage);
+      setBusy(els.loginBtn, true, "Logging in...");
+      try {
+        await signInWithEmailAndPassword(auth, els.loginEmail.value.trim(), els.loginPassword.value);
+      } catch (err) {
+        console.error(err);
+        showMessage(els.authMessage, friendlyError(err));
+      } finally {
+        setBusy(els.loginBtn, false);
+      }
+    }
+
+    async function handleSignup(e) {
+      e.preventDefault();
+      clearMessage(els.authMessage);
+      setBusy(els.signupBtn, true, "Creating...");
+      try {
+        const credential = await createUserWithEmailAndPassword(auth, els.signupEmail.value.trim(), els.signupPassword.value);
+        await updateProfile(credential.user, { displayName: els.signupName.value.trim() });
+        await setDoc(doc(db, "familyUsers", credential.user.uid), {
+          name: els.signupName.value.trim(),
+          email: credential.user.email || els.signupEmail.value.trim(),
+          role: "family",
+          approved: false,
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp()
+        });
+        showScreen("pending");
+      } catch (err) {
+        console.error(err);
+        showMessage(els.authMessage, friendlyError(err));
+      } finally {
+        setBusy(els.signupBtn, false);
+      }
+    }
+
+    function friendlyError(err) {
+      const code = err?.code || "";
+      if (code.includes("auth/invalid-credential") || code.includes("auth/wrong-password") || code.includes("auth/user-not-found")) {
+        return "The email or password was not recognized.";
+      }
+      if (code.includes("auth/email-already-in-use")) {
+        return "That email already has an account. Try logging in instead.";
+      }
+      if (code.includes("auth/weak-password")) {
+        return "Please use a password with at least 6 characters.";
+      }
+      if (code.includes("permission-denied")) {
+        return "Permission denied. Check that your Firestore rules are published and your account is approved.";
+      }
+      return err?.message || "Something went wrong.";
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function switchAuthMode(mode) {
+      const signup = mode === "signup";
+      els.signupForm.classList.toggle("hidden", !signup);
+      els.loginForm.classList.toggle("hidden", signup);
+      els.signupTab.classList.toggle("active", signup);
+      els.loginTab.classList.toggle("active", !signup);
+      clearMessage(els.authMessage);
+    }
+
+    els.loginTab.addEventListener("click", () => switchAuthMode("login"));
+    els.signupTab.addEventListener("click", () => switchAuthMode("signup"));
+    els.loginForm.addEventListener("submit", handleLogin);
+    els.signupForm.addEventListener("submit", handleSignup);
+    els.logoutBtn.addEventListener("click", () => signOut(auth));
+    els.pendingLogoutBtn.addEventListener("click", () => signOut(auth));
+
+    els.prevMonthBtn.addEventListener("click", () => {
+      state.viewDate = new Date(state.viewDate.getFullYear(), state.viewDate.getMonth() - 1, 1);
+      renderCalendar();
+    });
+
+    els.nextMonthBtn.addEventListener("click", () => {
+      state.viewDate = new Date(state.viewDate.getFullYear(), state.viewDate.getMonth() + 1, 1);
+      renderCalendar();
+    });
+
+    els.todayBtn.addEventListener("click", () => {
+      state.viewDate = new Date();
+      renderCalendar();
+    });
+
+    els.addEventBtn.addEventListener("click", () => openEventModal(null, todayKey()));
+    els.closeModalBtn.addEventListener("click", closeEventModal);
+    els.cancelEventBtn.addEventListener("click", closeEventModal);
+    els.eventForm.addEventListener("submit", saveEvent);
+    els.deleteEventBtn.addEventListener("click", deleteCurrentEvent);
+    els.eventModal.addEventListener("click", (e) => {
+      if (e.target === els.eventModal) closeEventModal();
+    });
+
+    els.eventAllDay.addEventListener("change", () => {
+      const disabled = els.eventAllDay.checked;
+      els.eventStartTime.disabled = disabled;
+      els.eventEndTime.disabled = disabled;
+      if (disabled) {
+        els.eventStartTime.value = "";
+        els.eventEndTime.value = "";
+      }
+    });
+
+    onAuthStateChanged(auth, async user => {
+      stopCalendarListeners();
+      state.currentUser = user;
+      state.currentProfile = null;
+
+      if (!user) {
+        showScreen("auth");
+        return;
+      }
+
+      try {
+        const profile = await loadOrCreateProfile(user);
+        state.currentProfile = profile;
+
+        if (!profile.approved) {
+          showScreen("pending");
+          return;
+        }
+
+        els.signedInText.textContent = `Signed in as ${profile.name || user.email || "family member"}`;
+        showScreen("app");
+        startCalendarListeners();
+      } catch (err) {
+        console.error(err);
+        showScreen("auth");
+        showMessage(els.authMessage, friendlyError(err));
+        await signOut(auth);
+      }
+    });
+  </script>
+</body>
+</html>
