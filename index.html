@@ -17,6 +17,12 @@
     :root {
       --bg: #f6f3ee;
       --card: #ffffff;
+      --card-rgb: 255, 255, 255;
+      --card-solid: #ffffff;
+      --item-bg: #fbfaf8;
+      --input-bg: #ffffff;
+      --secondary: #eef1f3;
+      --secondary-hover: #e0e6e9;
       --ink: #27313f;
       --muted: #6d7785;
       --line: #e4ded6;
@@ -26,6 +32,7 @@
       --danger: #b42318;
       --warning: #b86e00;
       --shadow: 0 14px 40px rgba(39, 49, 63, 0.10);
+      --page-bg: radial-gradient(circle at top left, #fff8e8 0, #f6f3ee 42%, #edf4f3 100%);
       --radius: 18px;
       --family: #2f6f73;
       --school: #5b5bd6;
@@ -37,12 +44,123 @@
       --other: #5f6774;
     }
 
+    body[data-theme="ocean"] {
+      --bg: #eaf6f8;
+      --card-rgb: 255, 255, 255;
+      --card-solid: #ffffff;
+      --item-bg: #f2fbfc;
+      --input-bg: #ffffff;
+      --secondary: #e4f1f3;
+      --secondary-hover: #d4e9ed;
+      --ink: #203343;
+      --muted: #60717d;
+      --line: #cde4e9;
+      --brand: #287987;
+      --brand-dark: #1e5d68;
+      --soft: #dff2f5;
+      --page-bg: radial-gradient(circle at top left, #eefcff 0, #eaf6f8 46%, #dfeff2 100%);
+      --shadow: 0 14px 40px rgba(32, 51, 67, 0.11);
+      --family: #287987;
+      --birthday: #d85b77;
+    }
+
+    body[data-theme="sunset"] {
+      --bg: #fff1e9;
+      --card-rgb: 255, 255, 255;
+      --card-solid: #ffffff;
+      --item-bg: #fff8f3;
+      --input-bg: #ffffff;
+      --secondary: #f5e5dc;
+      --secondary-hover: #ecd5c8;
+      --ink: #3d2d2a;
+      --muted: #7a6a63;
+      --line: #efd6ca;
+      --brand: #c7654a;
+      --brand-dark: #9e4a34;
+      --soft: #fde7dc;
+      --page-bg: radial-gradient(circle at top left, #fff7cf 0, #fff1e9 42%, #fbe3df 100%);
+      --shadow: 0 14px 40px rgba(61, 45, 42, 0.10);
+      --family: #c7654a;
+      --school: #6f6ad8;
+      --birthday: #bd4a80;
+    }
+
+    body[data-theme="lavender"] {
+      --bg: #f4f0fb;
+      --card-rgb: 255, 255, 255;
+      --card-solid: #ffffff;
+      --item-bg: #fbf8ff;
+      --input-bg: #ffffff;
+      --secondary: #eee8f7;
+      --secondary-hover: #e2d8f0;
+      --ink: #302c42;
+      --muted: #6f6882;
+      --line: #ded4ee;
+      --brand: #7057a8;
+      --brand-dark: #584286;
+      --soft: #eee8fb;
+      --page-bg: radial-gradient(circle at top left, #fff3fb 0, #f4f0fb 48%, #eaf0ff 100%);
+      --shadow: 0 14px 40px rgba(48, 44, 66, 0.10);
+      --family: #7057a8;
+      --appointment: #b66a4f;
+      --birthday: #bf4c9a;
+    }
+
+    body[data-theme="forest"] {
+      --bg: #eef5ec;
+      --card-rgb: 255, 255, 255;
+      --card-solid: #ffffff;
+      --item-bg: #f7fbf5;
+      --input-bg: #ffffff;
+      --secondary: #e4ede1;
+      --secondary-hover: #d7e4d2;
+      --ink: #263728;
+      --muted: #637163;
+      --line: #d4e3cf;
+      --brand: #3f7a4d;
+      --brand-dark: #2f5d3a;
+      --soft: #e3f1df;
+      --page-bg: radial-gradient(circle at top left, #fff7df 0, #eef5ec 46%, #dfeee4 100%);
+      --shadow: 0 14px 40px rgba(38, 55, 40, 0.10);
+      --family: #3f7a4d;
+      --sports: #2f6d43;
+      --birthday: #a94873;
+    }
+
+    body[data-theme="midnight"] {
+      --bg: #101925;
+      --card-rgb: 24, 35, 49;
+      --card-solid: #182331;
+      --item-bg: #111c28;
+      --input-bg: #101925;
+      --secondary: #253244;
+      --secondary-hover: #303f55;
+      --ink: #f2f5f7;
+      --muted: #a7b3c2;
+      --line: #354457;
+      --brand: #58aeb4;
+      --brand-dark: #43939a;
+      --soft: #203d48;
+      --danger: #ff8a78;
+      --warning: #f4b45a;
+      --page-bg: radial-gradient(circle at top left, #23364d 0, #101925 45%, #091018 100%);
+      --shadow: 0 14px 40px rgba(0, 0, 0, 0.30);
+      --family: #58aeb4;
+      --school: #9a8cff;
+      --work: #b28ce2;
+      --appointment: #ff9b73;
+      --sports: #71c98c;
+      --travel: #66c7e8;
+      --birthday: #f47db6;
+      --other: #a7b3c2;
+    }
+
     * { box-sizing: border-box; }
 
     body {
       margin: 0;
       font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: radial-gradient(circle at top left, #fff8e8 0, #f6f3ee 42%, #edf4f3 100%);
+      background: var(--page-bg);
       color: var(--ink);
       min-height: 100vh;
     }
@@ -64,8 +182,8 @@
 
     button:hover { background: var(--brand-dark); }
     button:active { transform: translateY(1px); }
-    button.secondary { background: #eef1f3; color: var(--ink); }
-    button.secondary:hover { background: #e0e6e9; }
+    button.secondary { background: var(--secondary); color: var(--ink); }
+    button.secondary:hover { background: var(--secondary-hover); }
     button.danger { background: var(--danger); }
     button.small { padding: 7px 11px; font-size: 13px; }
     button.icon { min-width: 40px; padding: 10px 12px; }
@@ -107,7 +225,7 @@
     .subtitle { color: var(--muted); margin: 0; }
 
     .card {
-      background: rgba(255, 255, 255, 0.92);
+      background: rgba(var(--card-rgb), 0.92);
       border: 1px solid rgba(228, 222, 214, 0.9);
       border-radius: var(--radius);
       box-shadow: var(--shadow);
@@ -138,7 +256,7 @@
       width: 100%;
       border: 1px solid var(--line);
       border-radius: 13px;
-      background: #fff;
+      background: var(--input-bg);
       color: var(--ink);
       padding: 11px 12px;
       outline: none;
@@ -168,7 +286,7 @@
     }
 
     .auth-tabs button.active {
-      background: #fff;
+      background: var(--card-solid);
       box-shadow: 0 4px 12px rgba(39, 49, 63, 0.10);
     }
 
@@ -219,7 +337,7 @@
       border: 1px solid var(--line);
       border-radius: 16px;
       overflow: hidden;
-      background: #fff;
+      background: var(--input-bg);
     }
 
     .weekday {
@@ -239,7 +357,7 @@
       padding: 9px;
       border-top: 1px solid var(--line);
       border-right: 1px solid var(--line);
-      background: #fff;
+      background: var(--input-bg);
       position: relative;
       cursor: pointer;
       overflow: hidden;
@@ -315,7 +433,7 @@
       border: 1px solid var(--line);
       border-radius: 16px;
       padding: 12px;
-      background: #fff;
+      background: var(--card-solid);
     }
 
     .quick-block h3 {
@@ -330,13 +448,13 @@
       border: 1px solid var(--line);
       border-radius: 14px;
       padding: 10px;
-      background: #fbfaf8;
+      background: var(--item-bg);
       cursor: pointer;
     }
 
     .quick-event:hover {
       border-color: rgba(47, 111, 115, 0.35);
-      background: #fff;
+      background: var(--input-bg);
     }
 
     .quick-event-title {
@@ -359,11 +477,76 @@
       padding: 0 7px;
     }
 
+    .theme-card {
+      display: grid;
+      gap: 12px;
+    }
+
+    .theme-select-row {
+      display: grid;
+      gap: 7px;
+    }
+
+    .theme-preview {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 8px;
+    }
+
+    .theme-swatch {
+      min-height: 38px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: var(--card-solid);
+      display: flex;
+      gap: 3px;
+      align-items: center;
+      justify-content: center;
+      padding: 6px;
+      cursor: pointer;
+    }
+
+    .theme-swatch span {
+      width: 12px;
+      height: 22px;
+      border-radius: 999px;
+      display: inline-block;
+    }
+
+    .theme-swatch.active {
+      outline: 3px solid color-mix(in srgb, var(--brand) 28%, transparent);
+      border-color: var(--brand);
+    }
+
+    .swatch-classic span:nth-child(1) { background: #2f6f73; }
+    .swatch-classic span:nth-child(2) { background: #f2c066; }
+    .swatch-classic span:nth-child(3) { background: #f6f3ee; }
+
+    .swatch-ocean span:nth-child(1) { background: #287987; }
+    .swatch-ocean span:nth-child(2) { background: #8bd3dc; }
+    .swatch-ocean span:nth-child(3) { background: #eaf6f8; }
+
+    .swatch-sunset span:nth-child(1) { background: #c7654a; }
+    .swatch-sunset span:nth-child(2) { background: #f4b45a; }
+    .swatch-sunset span:nth-child(3) { background: #fff1e9; }
+
+    .swatch-lavender span:nth-child(1) { background: #7057a8; }
+    .swatch-lavender span:nth-child(2) { background: #c89bdc; }
+    .swatch-lavender span:nth-child(3) { background: #f4f0fb; }
+
+    .swatch-forest span:nth-child(1) { background: #3f7a4d; }
+    .swatch-forest span:nth-child(2) { background: #b8d889; }
+    .swatch-forest span:nth-child(3) { background: #eef5ec; }
+
+    .swatch-midnight span:nth-child(1) { background: #101925; }
+    .swatch-midnight span:nth-child(2) { background: #58aeb4; }
+    .swatch-midnight span:nth-child(3) { background: #f2f5f7; }
+
     .event-item, .member-item {
       border: 1px solid var(--line);
       border-radius: 15px;
       padding: 12px;
-      background: #fff;
+      background: var(--card-solid);
     }
 
     .event-item-title {
@@ -439,7 +622,7 @@
 
     .modal {
       width: min(620px, 100%);
-      background: #fff;
+      background: var(--input-bg);
       border-radius: 22px;
       box-shadow: 0 24px 80px rgba(0, 0, 0, 0.24);
       padding: 20px;
@@ -490,7 +673,7 @@
       border: 1px solid var(--line);
       border-radius: 16px;
       padding: 12px;
-      background: #fff;
+      background: var(--input-bg);
       cursor: pointer;
       transition: transform 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease;
     }
@@ -522,7 +705,7 @@
       border-radius: 15px;
       padding: 16px;
       text-align: center;
-      background: #fff;
+      background: var(--input-bg);
     }
 
     .pending-screen {
@@ -694,6 +877,38 @@
           </div>
         </section>
 
+        <section class="card theme-card">
+          <div class="section-title-row">
+            <div>
+              <p class="subtitle">Personal preference</p>
+              <h2 style="margin-bottom: 0;">Color Theme</h2>
+            </div>
+          </div>
+
+          <div class="theme-select-row">
+            <label for="themeSelect">Choose your view</label>
+            <select id="themeSelect">
+              <option value="classic">Warm Classic</option>
+              <option value="ocean">Ocean Teal</option>
+              <option value="sunset">Sunset Coral</option>
+              <option value="lavender">Soft Lavender</option>
+              <option value="forest">Forest Green</option>
+              <option value="midnight">Midnight</option>
+            </select>
+          </div>
+
+          <div class="theme-preview" aria-label="Theme previews">
+            <button type="button" class="theme-swatch swatch-classic" data-theme-choice="classic" title="Warm Classic"><span></span><span></span><span></span></button>
+            <button type="button" class="theme-swatch swatch-ocean" data-theme-choice="ocean" title="Ocean Teal"><span></span><span></span><span></span></button>
+            <button type="button" class="theme-swatch swatch-sunset" data-theme-choice="sunset" title="Sunset Coral"><span></span><span></span><span></span></button>
+            <button type="button" class="theme-swatch swatch-lavender" data-theme-choice="lavender" title="Soft Lavender"><span></span><span></span><span></span></button>
+            <button type="button" class="theme-swatch swatch-forest" data-theme-choice="forest" title="Forest Green"><span></span><span></span><span></span></button>
+            <button type="button" class="theme-swatch swatch-midnight" data-theme-choice="midnight" title="Midnight"><span></span><span></span><span></span></button>
+          </div>
+
+          <p id="themeStatus" class="meta">Your theme saves to your family profile.</p>
+        </section>
+
         <section class="card">
           <h2>Upcoming</h2>
           <div id="upcomingList" class="upcoming-list"></div>
@@ -707,7 +922,7 @@
       </aside>
     </main>
 
-    <p class="version">Family Calendar v1.3.1</p>
+    <p class="version">Family Calendar v1.5</p>
   </div>
 
 
@@ -871,6 +1086,8 @@
       upcomingList: document.getElementById("upcomingList"),
       adminPanel: document.getElementById("adminPanel"),
       memberList: document.getElementById("memberList"),
+      themeSelect: document.getElementById("themeSelect"),
+      themeStatus: document.getElementById("themeStatus"),
       todayList: document.getElementById("todayList"),
       weekList: document.getElementById("weekList"),
       todayCount: document.getElementById("todayCount"),
@@ -914,7 +1131,8 @@
       viewDate: new Date(),
       selectedDateKey: null,
       unsubscribeEvents: null,
-      unsubscribeMembers: null
+      unsubscribeMembers: null,
+      theme: "classic"
     };
 
     const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -922,6 +1140,68 @@
     const dateFormatter = new Intl.DateTimeFormat("en-US", { weekday: "short", month: "short", day: "numeric" });
     const fullDayFormatter = new Intl.DateTimeFormat("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" });
     const timeFormatter = new Intl.DateTimeFormat("en-US", { hour: "numeric", minute: "2-digit", hour12: true });
+
+    const themeNames = {
+      classic: "Warm Classic",
+      ocean: "Ocean Teal",
+      sunset: "Sunset Coral",
+      lavender: "Soft Lavender",
+      forest: "Forest Green",
+      midnight: "Midnight"
+    };
+
+    function validTheme(theme) {
+      return Object.prototype.hasOwnProperty.call(themeNames, theme) ? theme : "classic";
+    }
+
+    function applyTheme(theme, saveLocal = true) {
+      const chosen = validTheme(theme);
+      state.theme = chosen;
+      document.body.dataset.theme = chosen;
+      if (els.themeSelect) els.themeSelect.value = chosen;
+      document.querySelectorAll(".theme-swatch").forEach(btn => {
+        btn.classList.toggle("active", btn.dataset.themeChoice === chosen);
+      });
+      if (saveLocal) {
+        try { localStorage.setItem("familyCalendarTheme", chosen); } catch (err) {}
+      }
+    }
+
+    function getLocalTheme() {
+      try {
+        return validTheme(localStorage.getItem("familyCalendarTheme") || "classic");
+      } catch (err) {
+        return "classic";
+      }
+    }
+
+    async function saveThemePreference(theme) {
+      const chosen = validTheme(theme);
+      applyTheme(chosen);
+
+      if (!state.currentUser) return;
+
+      if (els.themeStatus) {
+        els.themeStatus.textContent = "Saving theme...";
+      }
+
+      try {
+        await updateDoc(doc(db, "familyUsers", state.currentUser.uid), {
+          theme: chosen,
+          updatedAt: serverTimestamp()
+        });
+        if (state.currentProfile) state.currentProfile.theme = chosen;
+        if (els.themeStatus) {
+          els.themeStatus.textContent = `${themeNames[chosen]} saved to your profile.`;
+        }
+      } catch (err) {
+        console.error(err);
+        if (els.themeStatus) {
+          els.themeStatus.textContent = "Theme applied on this device. It could not be saved to your profile.";
+        }
+      }
+    }
+
 
     function showScreen(screenName) {
       els.authScreen.classList.toggle("hidden", screenName !== "auth");
@@ -1447,6 +1727,7 @@
         email: user.email || "",
         role: "family",
         approved: false,
+        theme: getLocalTheme(),
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp()
       };
@@ -1481,6 +1762,7 @@
           email: credential.user.email || els.signupEmail.value.trim(),
           role: "family",
           approved: false,
+          theme: getLocalTheme(),
           createdAt: serverTimestamp(),
           updatedAt: serverTimestamp()
         });
@@ -1583,12 +1865,23 @@
       }
     });
 
+    if (els.themeSelect) {
+      els.themeSelect.addEventListener("change", () => saveThemePreference(els.themeSelect.value));
+    }
+
+    document.querySelectorAll(".theme-swatch").forEach(btn => {
+      btn.addEventListener("click", () => saveThemePreference(btn.dataset.themeChoice));
+    });
+
+    applyTheme(getLocalTheme(), false);
+
     onAuthStateChanged(auth, async user => {
       stopCalendarListeners();
       state.currentUser = user;
       state.currentProfile = null;
 
       if (!user) {
+        applyTheme(getLocalTheme(), false);
         showScreen("auth");
         return;
       }
@@ -1596,6 +1889,7 @@
       try {
         const profile = await loadOrCreateProfile(user);
         state.currentProfile = profile;
+        applyTheme(profile.theme || getLocalTheme());
 
         if (!profile.approved) {
           showScreen("pending");
