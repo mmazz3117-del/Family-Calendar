@@ -1,0 +1,68 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function userDocExists() {
+      return signedIn()
+        && exists(/databases/$(database)/documents/familyUsers/$(request.auth.uid));
+    }
+
+    function familyUser() {
+      return userDocExists()
+        && get(/databases/$(database)/documents/familyUsers/$(request.auth.uid)).data.approved == true;
+    }
+
+    function isAdmin() {
+      return familyUser()
+        && get(/databases/$(database)/documents/familyUsers/$(request.auth.uid)).data.role == "admin";
+    }
+
+    function isSelf(userId) {
+      return signedIn() && request.auth.uid == userId;
+    }
+
+    match /familyEvents/{eventId} {
+      allow read: if familyUser();
+
+      allow create: if familyUser()
+        && request.resource.data.createdBy == request.auth.uid;
+
+      allow update: if isAdmin()
+        || (
+          familyUser()
+          && resource.data.createdBy == request.auth.uid
+          && request.resource.data.createdBy == resource.data.createdBy
+        );
+
+      allow delete: if isAdmin()
+        || (familyUser() && resource.data.createdBy == request.auth.uid);
+    }
+
+    match /familyUsers/{userId} {
+      allow read: if isAdmin() || isSelf(userId) || familyUser();
+
+      allow create: if isSelf(userId)
+        && request.resource.data.role == "family"
+        && request.resource.data.approved == false;
+
+      allow update: if isAdmin()
+        || (
+          isSelf(userId)
+          && request.resource.data.role == resource.data.role
+          && request.resource.data.approved == resource.data.approved
+        );
+
+      allow delete: if isAdmin();
+    }
+
+    match /familySettings/{docId} {
+      allow read: if familyUser();
+      allow write: if isAdmin();
+    }
+  }
+}
